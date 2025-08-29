@@ -1,0 +1,47 @@
+<script src="https://js.puter.com/v2/"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getAuth, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+  // 1. Konfigurasi Firebase
+  const firebaseConfig = {
+    apiKey: "AIzaSyBEAHRctAxxGN6P2oC23U1C2lFtefzXwnQ",
+    authDomain: "aksara-ai.firebaseapp.com",
+    projectId: "aksara-ai",
+    storageBucket: "aksara-ai.firebasestorage.app",
+    messagingSenderId: "920988522901",
+    appId: "1:920988522901:web:fe69aaaa64ad5df79abe9c",
+    measurementId: "G-Q12WQCN7Q2"
+  };
+
+  // 2. Init Firebase
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+
+  // 3. Login pakai Google
+  window.loginFirebase = async function() {
+    const provider = new GoogleAuthProvider();
+    const result = await signInWithPopup(auth, provider);
+    const user = result.user;
+    console.log("Firebase user:", user);
+
+    // 4. Login juga ke Puter
+    await puter.auth.signIn();
+
+    // 5. Simpan data user ke Puter KV
+    await puter.kv.set("users/" + user.uid, {
+      name: user.displayName,
+      email: user.email
+    });
+
+    alert("Login berhasil dengan Firebase + Puter!");
+  }
+</script>
+
+<button onclick="loginFirebase()">Login dengan Google (Firebase)</button>
+
+<button onclick="loginFirebase()">Login dengan Google (Firebase)</button>
+
