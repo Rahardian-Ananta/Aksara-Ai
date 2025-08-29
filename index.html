@@ -1,48 +1,81 @@
-<script src="https://js.puter.com/v2/"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Login Firebase + Puter</title>
+</head>
+<body>
+  <h2>Login Demo</h2>
+  <button onclick="loginFirebase()">Login dengan Google</button>
+  <button onclick="logoutAll()">Logout</button>
 
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getAuth, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  <!-- Tempat menampilkan hasil -->
+  <div id="status" style="margin-top:20px; padding:10px; border:1px solid #ddd; border-radius:8px;"></div>
 
-  // 1. Konfigurasi Firebase
-  const firebaseConfig = {
-    apiKey: "AIzaSyBEAHRctAxxGN6P2oC23U1C2lFtefzXwnQ",
-    authDomain: "aksara-ai.firebaseapp.com",
-    projectId: "aksara-ai",
-    storageBucket: "aksara-ai.firebasestorage.app",
-    messagingSenderId: "920988522901",
-    appId: "1:920988522901:web:fe69aaaa64ad5df79abe9c",
-    measurementId: "G-Q12WQCN7Q2"
-  };
+  <script src="https://js.puter.com/v2/"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 
-  // 2. Init Firebase
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
+  <script>
+    // Konfigurasi Firebase
+    const firebaseConfig = {
+      apiKey: "AIzaSyBEAHRctAxxGN6P2oC23U1C2lFtefzXwnQ",
+      authDomain: "aksara-ai.firebaseapp.com",
+      projectId: "aksara-ai",
+      storageBucket: "aksara-ai.firebasestorage.app",
+      messagingSenderId: "920988522901",
+      appId: "1:920988522901:web:fe69aaaa64ad5df79abe9c",
+      measurementId: "G-Q12WQCN7Q2"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
 
-  // 3. Login pakai Google
-  window.loginFirebase = async function() {
-    const provider = new GoogleAuthProvider();
-    const result = await signInWithPopup(auth, provider);
-    const user = result.user;
-    console.log("Firebase user:", user);
+    // Fungsi login Firebase + Puter
+    async function loginFirebase() {
+      const provider = new firebase.auth.GoogleAuthProvider();
+      try {
+        const result = await auth.signInWithPopup(provider);
+        const user = result.user;
 
-    // 4. Login juga ke Puter
-    await puter.auth.signIn();
+        // Login ke Puter juga
+        await puter.auth.signIn();
 
-    // 5. Simpan data user ke Puter KV
-    await puter.kv.set("users/" + user.uid, {
-      name: user.displayName,
-      email: user.email
-    });
+        // Simpan data user di Puter
+        await puter.kv.set("users/" + user.uid, {
+          name: user.displayName,
+          email: user.email
+        });
 
-    alert("Login berhasil dengan Firebase + Puter!");
-  }
-</script>
+        // Tampilkan hasil login
+        document.getElementById("status").innerHTML = `
+          <b>Login Berhasil!</b><br>
+          <img src="${user.photoURL}" width="60" style="border-radius:50%"><br>
+          Nama: ${user.displayName}<br>
+          Email: ${user.email}<br>
+          UID: ${user.uid}
+        `;
+      } catch (err) {
+        document.getElementById("status").innerHTML =
+          `<span style="color:red;">Login gagal: ${err.message}</span>`;
+      }
+    }
 
-<button onclick="loginFirebase()">Login dengan Google (Firebase)</button>
+    // Fungsi logout Firebase + Puter
+    async function logoutAll() {
+      try {
+        // Logout Firebase
+        await auth.signOut();
 
-<button onclick="loginFirebase()">Login dengan Google (Firebase)</button>
+        // Logout Puter
+        await puter.auth.signOut();
 
-
+        document.getElementById("status").innerHTML = 
+          `<span style="color:blue;">Berhasil logout dari Firebase + Puter</span>`;
+      } catch (err) {
+        document.getElementById("status").innerHTML =
+          `<span style="color:red;">Logout gagal: ${err.message}</span>`;
+      }
+    }
+  </script>
+</body>
+</html>
